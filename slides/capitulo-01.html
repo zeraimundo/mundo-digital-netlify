@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#071525">
+  <title>Capítulo 1 — Cidadania Digital, Ética e Participação</title>
+  <style>
+    :root {
+      --bg: #071525;
+      --bg-2: #0b2037;
+      --panel: rgba(10, 30, 51, .82);
+      --panel-strong: rgba(7, 23, 40, .96);
+      --line: rgba(148, 220, 255, .2);
+      --text: #f5fbff;
+      --muted: #b8cada;
+      --cyan: #37d7ff;
+      --cyan-soft: #9bedff;
+      --violet: #9b7bff;
+      --pink: #ff6fbd;
+      --amber: #ffc85a;
+      --green: #51e6a3;
+      --red: #ff7080;
+      --radius: 22px;
+      --shadow: 0 18px 55px rgba(0, 0, 0, .35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body {
+      overflow: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 20%, rgba(55, 215, 255, .13), transparent 29%),
+        radial-gradient(circle at 83% 72%, rgba(155, 123, 255, .12), transparent 32%),
+        linear-gradient(135deg, var(--bg), #050d18 72%);
+      font-family: "Segoe UI", Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input { font: inherit; }
+    button { color: inherit; }
+    a { color: var(--cyan-soft); }
+
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: .55;
+      pointer-events: none;
+    }
+
+    .topbar {
+      position: fixed;
+      inset: 0 0 auto 0;
+      height: 54px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 22px;
+      background: rgba(4, 14, 25, .78);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: .02em;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      flex: 0 0 30px;
+      border-radius: 10px;
+      color: #04111d;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      box-shadow: 0 0 24px rgba(55, 215, 255, .28);
+    }
+
+    .brand span:last-child {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-progress {
+      height: 5px;
+      flex: 1;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .09);
+    }
+
+    .top-progress > div {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--cyan), var(--violet), var(--pink));
+      transition: width .35s ease;
+    }
+
+    .slide-count {
+      min-width: 58px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
+      text-align: center;
+    }
+
+    .icon-btn {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      flex: 0 0 36px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--text);
+      background: rgba(255, 255, 255, .055);
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .icon-btn:hover, .icon-btn:focus-visible {
+      transform: translateY(-2px);
+      border-color: rgba(55, 215, 255, .58);
+      background: rgba(55, 215, 255, .12);
+      outline: none;
+    }
+
+    #stage {
+      position: fixed;
+      inset: 54px 0 65px;
+      z-index: 5;
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      visibility: hidden;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden auto;
+      padding: clamp(26px, 4vw, 68px) clamp(28px, 5.2vw, 90px);
+      opacity: 0;
+      transform: translateX(3%);
+      transition: opacity .38s ease, transform .38s ease, visibility 0s linear .38s;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(55,215,255,.35) transparent;
+    }
+
+    .slide.active {
+      visibility: visible;
+      z-index: 2;
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: 0s;
+    }
+
+    .slide.leaving-left { transform: translateX(-3%); }
+    .slide > * { position: relative; z-index: 1; }
+
+    .slide::before {
+      content: "";
+      position: absolute;
+      width: min(46vw, 620px);
+      aspect-ratio: 1;
+      right: -14%;
+      top: -27%;
+      border: 1px solid rgba(55, 215, 255, .1);
+      border-radius: 50%;
+      box-shadow: 0 0 0 70px rgba(155, 123, 255, .025), 0 0 0 140px rgba(55, 215, 255, .018);
+    }
+
+    .eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+      color: var(--cyan-soft);
+      font-size: clamp(12px, 1.15vw, 17px);
+      font-weight: 800;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 32px;
+      height: 3px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--cyan), var(--violet));
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 {
+      max-width: 980px;
+      margin-bottom: 18px;
+      font-size: clamp(45px, 6.2vw, 90px);
+      line-height: .98;
+      letter-spacing: -.045em;
+    }
+
+    h2 {
+      max-width: 1180px;
+      margin-bottom: clamp(18px, 2.3vw, 34px);
+      font-size: clamp(34px, 4.1vw, 62px);
+      line-height: 1.04;
+      letter-spacing: -.035em;
+    }
+
+    h3 {
+      margin-bottom: 9px;
+      font-size: clamp(20px, 1.8vw, 29px);
+      line-height: 1.13;
+    }
+
+    p, li {
+      color: var(--muted);
+      font-size: clamp(16px, 1.38vw, 22px);
+      line-height: 1.46;
+    }
+
+    .lead {
+      max-width: 940px;
+      color: #d9eaf5;
+      font-size: clamp(19px, 1.65vw, 27px);
+    }
+
+    .accent { color: var(--cyan); }
+    .violet { color: #beaaff; }
+    .pink { color: #ff9bd1; }
+    .amber { color: var(--amber); }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .muted { color: var(--muted); }
+    .small { font-size: clamp(12px, 1vw, 15px); }
+
+    .hero-grid,
+    .two-col,
+    .media-grid,
+    .scenario-display {
+      display: grid;
+      align-items: center;
+      gap: clamp(24px, 3.5vw, 58px);
+    }
+
+    .hero-grid { grid-template-columns: 1.05fr .95fr; }
+    .two-col { grid-template-columns: 1fr 1fr; }
+    .media-grid { grid-template-columns: .9fr 1.1fr; }
+    .scenario-display { grid-template-columns: 1fr 1fr; }
+
+    .hero-subtitle {
+      max-width: 780px;
+      margin: 0 0 26px;
+      color: #d6e9f5;
+      font-size: clamp(19px, 1.7vw, 27px);
+    }
+
+    .meta-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .meta-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: #d9ebf7;
+      background: rgba(255,255,255,.045);
+      font-size: clamp(12px, 1vw, 15px);
+    }
+
+    .hero-visual {
+      position: relative;
+      min-height: min(58vh, 520px);
+    }
+
+    .phone-stack {
+      position: absolute;
+      inset: 6% 6% 6% 8%;
+      display: grid;
+      place-items: center;
+    }
+
+    .phone {
+      position: absolute;
+      width: min(31vw, 320px);
+      aspect-ratio: .56;
+      padding: 14px;
+      border: 2px solid rgba(163, 231, 255, .34);
+      border-radius: 35px;
+      background: linear-gradient(145deg, rgba(22, 63, 96, .94), rgba(6, 20, 35, .96));
+      box-shadow: var(--shadow), inset 0 0 32px rgba(55, 215, 255, .05);
+      transform: rotate(-7deg);
+    }
+
+    .phone.two {
+      right: 3%;
+      top: 3%;
+      transform: rotate(9deg) scale(.78);
+      opacity: .84;
+    }
+
+    .phone-screen {
+      height: 100%;
+      overflow: hidden;
+      border: 2px solid rgba(55, 215, 255, .28);
+      border-radius: 25px;
+      background:
+        linear-gradient(rgba(55,215,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(55,215,255,.035) 1px, transparent 1px),
+        #07111d;
+      background-size: 22px 22px;
+      padding: 16px;
+    }
+
+    .post {
+      margin-bottom: 13px;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 15px;
+      background: rgba(255,255,255,.055);
+      animation: postPulse 2.6s ease-in-out infinite;
+    }
+    .post:nth-child(2){animation-delay:-.8s}
+    .post:nth-child(3){animation-delay:-1.4s}
+    @keyframes postPulse { 50% { transform: translateY(-4px); border-color: rgba(55,215,255,.35); } }
+
+    .floating-symbol {
+      position: absolute;
+      color: var(--cyan-soft);
+      font-size: clamp(25px, 3vw, 48px);
+      opacity: .75;
+      filter: drop-shadow(0 0 15px rgba(55,215,255,.35));
+      animation: floaty 4.5s ease-in-out infinite;
+    }
+    .symbol-a { right: 4%; top: 4%; }
+    .symbol-b { left: 2%; bottom: 9%; animation-delay: -2.2s; color: #c7b9ff; }
+    .symbol-c { right: 8%; bottom: 4%; animation-delay: -1.1s; color: #ff9bd1; }
+    @keyframes floaty { 50% { transform: translateY(-10px) rotate(5deg); } }
+
+    .card,
+    .glass {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(18, 49, 78, .75), rgba(8, 25, 43, .8));
+      box-shadow: 0 12px 36px rgba(0, 0, 0, .18);
+      backdrop-filter: blur(12px);
+    }
+
+    .card { padding: clamp(18px, 2vw, 30px); }
+    .glass { padding: clamp(16px, 1.7vw, 25px); }
+    .card p:last-child, .glass p:last-child { margin-bottom: 0; }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(13px, 1.7vw, 24px);
+    }
+
+    .card-grid.four { grid-template-columns: repeat(4, 1fr); }
+    .card-grid.two { grid-template-columns: repeat(2, 1fr); }
+
+    .icon-circle {
+      display: grid;
+      place-items: center;
+      width: clamp(46px, 4.3vw, 66px);
+      aspect-ratio: 1;
+      margin-bottom: 14px;
+      border: 1px solid rgba(55, 215, 255, .28);
+      border-radius: 18px;
+      background: rgba(55, 215, 255, .08);
+      font-size: clamp(25px, 2.3vw, 38px);
+    }
+
+    .prompt {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-top: 22px;
+      padding: 16px 18px;
+      border-left: 4px solid var(--amber);
+      border-radius: 0 16px 16px 0;
+      color: #fff5d9;
+      background: rgba(255, 200, 90, .09);
+      font-size: clamp(16px, 1.2vw, 19px);
+      line-height: 1.4;
+    }
+
+    .prompt strong { color: var(--amber); }
+
+    .toggle-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .toggle-card {
+      min-height: 118px;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      text-align: left;
+      background: rgba(255,255,255,.045);
+      cursor: pointer;
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .toggle-card:hover, .toggle-card:focus-visible {
+      transform: translateY(-3px);
+      border-color: rgba(55,215,255,.5);
+      outline: none;
+    }
+    .toggle-card.found { border-color: rgba(81,230,163,.65); background: rgba(81,230,163,.11); }
+    .toggle-card .check { float: right; opacity: 0; color: var(--green); }
+    .toggle-card.found .check { opacity: 1; }
+    .toggle-card strong { display: block; margin-bottom: 6px; font-size: clamp(17px, 1.3vw, 21px); }
+    .toggle-card span:last-child { color: var(--muted); font-size: clamp(13px, 1vw, 16px); }
+
+    .definition {
+      max-width: 1050px;
+      margin: 0 auto 26px;
+      padding: clamp(24px, 3vw, 42px);
+      border: 1px solid rgba(55,215,255,.28);
+      border-radius: 28px;
+      color: #f4fbff;
+      background: linear-gradient(135deg, rgba(55,215,255,.105), rgba(155,123,255,.08));
+      font-size: clamp(23px, 2.5vw, 38px);
+      font-weight: 650;
+      line-height: 1.3;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .concept-tabs, .scenario-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .pill-btn {
+      padding: 10px 16px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .pill-btn:hover, .pill-btn:focus-visible, .pill-btn.active {
+      border-color: rgba(55,215,255,.62);
+      background: rgba(55,215,255,.13);
+      outline: none;
+    }
+
+    .concept-output {
+      min-height: 96px;
+      max-width: 920px;
+      margin: 18px auto 0;
+      color: #dcedf6;
+      text-align: center;
+      font-size: clamp(17px, 1.35vw, 22px);
+    }
+
+    .media-frame {
+      position: relative;
+      min-height: 330px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(55,215,255,.08), rgba(155,123,255,.08));
+      box-shadow: var(--shadow);
+    }
+
+    .media-frame img {
+      width: 100%;
+      height: 100%;
+      min-height: 330px;
+      display: block;
+      object-fit: cover;
+    }
+
+    .media-frame.failed::after {
+      content: "Imagem indisponível — o conteúdo da aula continua normalmente.";
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 30px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .media-caption {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 9px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      color: #e7f4fb;
+      background: rgba(2,11,20,.78);
+      font-size: 11px;
+      line-height: 1.25;
+      backdrop-filter: blur(8px);
+    }
+
+    .stack { display: grid; gap: 13px; }
+    .fact-row {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.035);
+    }
+    .fact-row b { color: var(--cyan-soft); font-size: clamp(17px,1.35vw,22px); }
+    .fact-row span { color: var(--muted); font-size: clamp(14px,1.05vw,17px); }
+
+    .connection-line {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 14px;
+      align-items: center;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+    .connection-node {
+      min-height: 210px;
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      text-align: center;
+      background: rgba(255,255,255,.045);
+    }
+    .connection-node .big { display: block; margin-bottom: 12px; font-size: clamp(43px,5vw,72px); }
+    .arrow { color: var(--cyan); font-size: clamp(28px,3.5vw,48px); }
+
+    .flow-card {
+      position: relative;
+      min-height: 230px;
+      padding: 20px 17px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      text-align: center;
+      background: rgba(255,255,255,.042);
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .flow-card:not(:last-child)::after {
+      content: "→";
+      position: absolute;
+      z-index: 3;
+      right: -21px;
+      top: 43%;
+      color: var(--cyan);
+      font-size: 27px;
+    }
+
+    .flow-card:hover, .flow-card:focus-visible, .flow-card.active {
+      transform: translateY(-4px);
+      border-color: rgba(55,215,255,.55);
+      background: rgba(55,215,255,.1);
+      outline: none;
+    }
+
+    .flow-card .flow-icon { display: block; margin: 8px 0 14px; font-size: clamp(38px,4vw,61px); }
+    .flow-card p { font-size: clamp(13px,1vw,16px); }
+    .flow-example {
+      min-height: 58px;
+      margin-top: 16px;
+      color: #eaf8ff;
+      text-align: center;
+      font-size: clamp(17px,1.35vw,21px);
+    }
+
+    .scenario-side {
+      min-height: 230px;
+      padding: 25px;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,.04);
+    }
+    .scenario-side .big { font-size: 46px; }
+    .scenario-side ul { margin: 12px 0 0; padding-left: 21px; }
+
+    .quick-checks { display: grid; gap: 12px; }
+    .quick-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 15px 17px;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255,255,255,.038);
+    }
+    .quick-row p { margin: 0; color: #deedf6; }
+    .quick-actions { display: flex; gap: 7px; }
+    .quick-actions button {
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: rgba(255,255,255,.05);
+      cursor: pointer;
+    }
+    .quick-actions button:hover, .quick-actions button:focus-visible { border-color: var(--cyan); outline: none; }
+    .quick-result { grid-column: 1 / -1; display: none; color: var(--muted); font-size: 14px; }
+    .quick-row.answered .quick-result { display: block; }
+    .quick-row.correct { border-color: rgba(81,230,163,.5); }
+    .quick-row.wrong { border-color: rgba(255,112,128,.5); }
+
+    .drag-shell { display: grid; grid-template-columns: .78fr 1.22fr; gap: 20px; }
+    .draggables { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; align-content: start; }
+    .drag-item {
+      padding: 12px 10px;
+      border: 1px solid rgba(255,200,90,.28);
+      border-radius: 14px;
+      background: rgba(255,200,90,.07);
+      cursor: grab;
+      text-align: center;
+      user-select: none;
+    }
+    .drag-item.selected { outline: 3px solid var(--amber); outline-offset: 2px; }
+    .drag-item.placed { opacity: .25; pointer-events: none; }
+    .drop-zones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .drop-zone {
+      min-height: 158px;
+      padding: 13px;
+      border: 2px dashed rgba(55,215,255,.25);
+      border-radius: 17px;
+      background: rgba(55,215,255,.035);
+      cursor: pointer;
+      transition: .18s ease;
+    }
+    .drop-zone:hover, .drop-zone:focus-visible, .drop-zone.dragover {
+      border-color: var(--cyan);
+      background: rgba(55,215,255,.09);
+      outline: none;
+    }
+    .drop-zone b { display: block; margin-bottom: 6px; color: var(--cyan-soft); }
+    .drop-zone .placed-labels { color: var(--muted); font-size: 13px; }
+    .game-status { display: flex; justify-content: space-between; gap: 10px; margin-top: 12px; color: var(--muted); }
+
+    .timeline-shell {
+      display: grid;
+      grid-template-columns: minmax(235px, .7fr) 1.3fr;
+      gap: clamp(20px, 3vw, 45px);
+      align-items: stretch;
+    }
+
+    .timeline-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+    }
+
+    .time-btn {
+      min-height: 66px;
+      padding: 10px 8px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .time-btn strong { display: block; color: var(--text); font-size: 16px; }
+    .time-btn:hover, .time-btn:focus-visible, .time-btn.active {
+      transform: translateY(-2px);
+      border-color: rgba(255,200,90,.55);
+      color: #fff0c5;
+      background: rgba(255,200,90,.1);
+      outline: none;
+    }
+
+    .timeline-detail {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 330px;
+      overflow: hidden;
+      padding: clamp(25px, 3vw, 44px);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: linear-gradient(135deg, rgba(22,64,96,.72), rgba(8,23,40,.9));
+      box-shadow: var(--shadow);
+    }
+
+    .timeline-year {
+      margin-bottom: 9px;
+      color: var(--amber);
+      font-size: clamp(34px, 5vw, 72px);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -.04em;
+    }
+    .timeline-detail h3 { font-size: clamp(24px, 2.4vw, 37px); }
+    .timeline-detail p { max-width: 760px; }
+
+    .quiz-shell {
+      max-width: 1060px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .quiz-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 15px;
+      color: var(--muted);
+    }
+    .quiz-mini-progress { flex: 1; height: 8px; overflow: hidden; border-radius: 99px; background: rgba(255,255,255,.08); }
+    .quiz-mini-progress div { height: 100%; background: linear-gradient(90deg,var(--cyan),var(--violet)); transition: width .3s; }
+    .quiz-card {
+      min-height: 465px;
+      padding: clamp(24px,3vw,43px);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: linear-gradient(145deg, rgba(18,49,78,.86), rgba(7,22,39,.94));
+      box-shadow: var(--shadow);
+    }
+    .quiz-card h3 { margin-bottom: 24px; font-size: clamp(23px,2.45vw,37px); }
+    .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+    .quiz-option {
+      min-height: 67px;
+      padding: 14px 17px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      text-align: left;
+      background: rgba(255,255,255,.045);
+      cursor: pointer;
+      transition: .18s ease;
+    }
+    .quiz-option:hover, .quiz-option:focus-visible { transform: translateY(-2px); border-color: rgba(55,215,255,.55); outline: none; }
+    .quiz-option.correct { border-color: var(--green); background: rgba(81,230,163,.13); }
+    .quiz-option.wrong { border-color: var(--red); background: rgba(255,112,128,.13); }
+    .quiz-option:disabled { cursor: default; }
+    .quiz-feedback { min-height: 72px; margin-top: 17px; padding: 12px 15px; border-radius: 14px; color: var(--muted); background: rgba(0,0,0,.12); }
+    .quiz-feedback.good { color: #d8ffec; background: rgba(81,230,163,.08); }
+    .quiz-feedback.bad { color: #ffe0e4; background: rgba(255,112,128,.08); }
+    .quiz-actions { display: flex; justify-content: flex-end; margin-top: 13px; }
+    .primary-btn, .secondary-btn {
+      padding: 11px 17px;
+      border-radius: 13px;
+      cursor: pointer;
+    }
+    .primary-btn { border: 0; color: #04111d; background: linear-gradient(135deg,var(--cyan),#83ebff); font-weight: 800; }
+    .secondary-btn { border: 1px solid var(--line); background: rgba(255,255,255,.05); }
+    .primary-btn:disabled { opacity: .35; cursor: default; }
+    .result-panel { display: grid; place-items: center; min-height: 390px; text-align: center; }
+    .result-score { color: var(--cyan); font-size: clamp(62px,9vw,122px); font-weight: 900; line-height: 1; }
+    .result-panel h3 { font-size: clamp(27px,3vw,44px); }
+
+    .controls {
+      position: fixed;
+      inset: auto 0 0;
+      height: 65px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      padding: 0 22px;
+      border-top: 1px solid var(--line);
+      background: rgba(4, 14, 25, .82);
+      backdrop-filter: blur(18px);
+    }
+
+    .teacher {
+      min-width: 0;
+      color: var(--muted);
+      font-size: clamp(11px, .92vw, 14px);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-group { display: flex; align-items: center; gap: 9px; }
+    .nav-btn {
+      min-width: 104px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(255,255,255,.055);
+      cursor: pointer;
+      transition: .18s ease;
+    }
+    .nav-btn.next { border: 0; color: #04111d; background: linear-gradient(135deg,var(--cyan),#92edff); font-weight: 850; }
+    .nav-btn:hover:not(:disabled), .nav-btn:focus-visible:not(:disabled) { transform: translateY(-2px); outline: none; }
+    .nav-btn:disabled { opacity: .3; cursor: default; }
+    .key-hint { color: #7892a6; font-size: 12px; }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: none;
+      place-items: center;
+      padding: 25px;
+      background: rgba(1,7,12,.82);
+      backdrop-filter: blur(16px);
+    }
+    .modal.open { display: grid; }
+    .modal-panel {
+      width: min(1100px, 95vw);
+      max-height: 86vh;
+      overflow: auto;
+      padding: clamp(22px,3vw,40px);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: var(--panel-strong);
+      box-shadow: var(--shadow);
+    }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 20px; }
+    .modal-head h2 { margin: 0; font-size: clamp(27px,3vw,43px); }
+    .overview-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 11px; }
+    .overview-item {
+      min-height: 92px;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      text-align: left;
+      background: rgba(255,255,255,.04);
+      cursor: pointer;
+    }
+    .overview-item:hover, .overview-item:focus-visible, .overview-item.current { border-color: rgba(55,215,255,.65); background: rgba(55,215,255,.1); outline: none; }
+    .overview-item small { display: block; margin-bottom: 5px; color: var(--cyan-soft); }
+    .overview-item span { color: #dcecf5; font-size: 14px; line-height: 1.2; }
+    .sources-list { display: grid; gap: 13px; }
+    .source-item { padding: 14px 16px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.035); }
+    .source-item b { display: block; margin-bottom: 5px; }
+    .source-item p { margin: 0; font-size: 14px; }
+    .help-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    kbd { display: inline-block; min-width: 32px; padding: 4px 7px; border: 1px solid rgba(255,255,255,.22); border-bottom-width: 3px; border-radius: 8px; color: #fff; background: rgba(255,255,255,.06); text-align: center; }
+
+    .toast {
+      position: fixed;
+      z-index: 120;
+      left: 50%;
+      bottom: 80px;
+      max-width: min(560px, 88vw);
+      padding: 11px 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: rgba(4,14,25,.94);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translate(-50%, 12px);
+      pointer-events: none;
+      transition: .25s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%,0); }
+
+    @media (max-width: 980px) {
+      .slide { justify-content: flex-start; }
+      .hero-grid, .two-col, .media-grid, .timeline-shell, .drag-shell, .scenario-display { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+      .card-grid.four { grid-template-columns: repeat(2,1fr); }
+      .connection-line { grid-template-columns: 1fr; }
+      .connection-line .arrow { transform: rotate(90deg); text-align: center; }
+      .overview-grid { grid-template-columns: repeat(3,1fr); }
+      .flow-card:not(:last-child)::after { display:none; }
+    }
+
+    @media (max-width: 680px) {
+      .brand span:last-child, .key-hint, .teacher { display: none; }
+      .topbar, .controls { padding-left: 12px; padding-right: 12px; }
+      .slide { padding: 23px 20px 30px; }
+      .card-grid, .card-grid.two, .card-grid.four, .toggle-cards, .quiz-options, .drop-zones, .draggables { grid-template-columns: 1fr; }
+      .timeline-buttons { grid-template-columns: repeat(2,1fr); }
+      .quick-row { grid-template-columns: 1fr; }
+      .overview-grid, .help-grid { grid-template-columns: 1fr 1fr; }
+      .nav-btn { min-width: 48px; }
+      .nav-btn .nav-text { display: none; }
+      .quiz-card { min-height: 520px; }
+    }
+
+    @media (max-height: 820px) and (min-width: 800px) {
+      h2 { margin-bottom: 12px; font-size: clamp(31px, 3.45vw, 48px); }
+      h3 { margin-bottom: 6px; }
+      p, li { line-height: 1.34; }
+      .eyebrow { margin-bottom: 7px; }
+      .slide { justify-content: flex-start; padding-top: 18px; padding-bottom: 18px; }
+      .card, .glass { padding: 14px 17px; }
+      .prompt { margin-top: 13px; padding-top: 11px; padding-bottom: 11px; }
+      .media-frame, .media-frame img { min-height: 225px !important; }
+      .fact-row { padding: 10px 13px; }
+      .timeline-detail { min-height: 265px; }
+      .flow-card { min-height: 180px; }
+      .scenario-side { min-height: 185px; padding: 18px 22px; }
+      .quiz-card { min-height: 385px; padding: 22px 28px; }
+      .quiz-card h3 { margin-bottom: 15px; }
+      .quiz-option { min-height: 56px; padding: 10px 14px; }
+      .quiz-feedback { min-height: 58px; margin-top: 10px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .001ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">⌘</span><span>MUNDO DIGITAL · CAPÍTULO 1</span></div>
+    <div class="top-progress" aria-label="Progresso da apresentação"><div id="progressBar"></div></div>
+    <div class="slide-count" id="slideCount" aria-live="polite">1 / 22</div>
+    <button class="icon-btn" id="overviewBtn" aria-label="Ver todos os slides" title="Visão geral">▦</button>
+    <button class="icon-btn" id="sourcesBtn" aria-label="Abrir fontes" title="Fontes e créditos">☷</button>
+    <button class="icon-btn" id="helpBtn" aria-label="Abrir ajuda" title="Ajuda">?</button>
+    <button class="icon-btn" id="fullscreenBtn" aria-label="Alternar tela cheia" title="Tela cheia">⛶</button>
+  </header>
+
+  <main id="stage">
+    <section class="slide active" data-title="Abertura">
+      <div class="hero-grid">
+        <div>
+          <div class="eyebrow">Mundo Digital · Modo de usar</div>
+          <h1>Cidadania <span class="accent">Digital</span></h1>
+          <p class="hero-subtitle">Ética, inclusão, uso crítico das mídias e participação responsável em uma sociedade conectada.</p>
+          <div class="meta-row">
+            <span class="meta-chip">🌐 Mundo conectado</span>
+            <span class="meta-chip">🤝 Inclusão</span>
+            <span class="meta-chip">📰 Mídias digitais</span>
+            <span class="meta-chip">🗳️ Democracia</span>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <span class="floating-symbol symbol-a">#</span>
+          <span class="floating-symbol symbol-b">♡</span>
+          <span class="floating-symbol symbol-c">↗</span>
+          <div class="phone-stack">
+            <div class="phone">
+              <div class="phone-screen">
+                <div class="post"><strong>Postagem</strong><br><span class="muted">Antes de compartilhar: fonte?</span></div>
+                <div class="post"><strong>Comentário</strong><br><span class="muted">Discordar sem atacar.</span></div>
+                <div class="post"><strong>Privacidade</strong><br><span class="muted">Dados pessoais merecem cuidado.</span></div>
+              </div>
+            </div>
+            <div class="phone two">
+              <div class="phone-screen">
+                <div class="post">🧠 Pensamento crítico</div>
+                <div class="post">🗳️ Participação</div>
+                <div class="post">🤝 Respeito</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Aquecimento">
+      <div class="eyebrow">Aquecimento</div>
+      <h2>Onde a cidadania digital aparece no seu dia a dia?</h2>
+      <p class="lead">Clique nos cartões que representam situações de cidadania digital. A ideia é perceber que ela não está só nas aulas de informática.</p>
+      <div class="toggle-cards" id="warmupCards">
+        <button class="toggle-card"><span class="check">✓</span><strong>💬 Comentários</strong><span>Como eu discordo de alguém?</span></button>
+        <button class="toggle-card"><span class="check">✓</span><strong>📤 Compartilhamentos</strong><span>Eu verifico antes de enviar?</span></button>
+        <button class="toggle-card"><span class="check">✓</span><strong>📸 Fotos</strong><span>Tenho autorização para publicar?</span></button>
+        <button class="toggle-card"><span class="check">✓</span><strong>🔐 Dados</strong><span>Protejo minhas informações?</span></button>
+        <button class="toggle-card"><span class="check">✓</span><strong>🗳️ Opinião pública</strong><span>Participo com responsabilidade?</span></button>
+        <button class="toggle-card"><span class="check">✓</span><strong>♿ Acessibilidade</strong><span>A tecnologia inclui todos?</span></button>
+      </div>
+      <div class="prompt"><strong>Discussão rápida:</strong> em qual dessas situações a turma mais percebe conflitos ou dúvidas no cotidiano?</div>
+    </section>
+
+    <section class="slide" data-title="O capítulo 1">
+      <div class="media-grid">
+        <div>
+          <div class="eyebrow">Contexto do capítulo</div>
+          <h2>O capítulo 1 fala sobre agir no digital com ética e autonomia</h2>
+          <p class="lead">O tema central é o comportamento responsável no mundo digital, incluindo inclusão, uso crítico das mídias e participação ativa na sociedade.</p>
+          <div class="stack">
+            <div class="fact-row"><b>Ética</b><span>Como minhas ações afetam outras pessoas?</span></div>
+            <div class="fact-row"><b>Autonomia</b><span>Consigo decidir sem ser manipulado por impulsos, algoritmos ou boatos?</span></div>
+            <div class="fact-row"><b>Pensamento crítico</b><span>Eu questiono fontes, intenções e consequências?</span></div>
+          </div>
+        </div>
+        <figure class="media-frame">
+          <img src="https://images.squarespace-cdn.com/content/v1/65f7485dd4c5d66039c96c78/1751330406603-JBTAQBMNFTMD0ZX7UFZL/digital-citizenship-k12-beyondk12.png" alt="Estudantes em atividade sobre cidadania digital" onerror="this.closest('.media-frame').classList.add('failed'); this.remove();">
+          <figcaption class="media-caption">Imagem ilustrativa: estudantes em atividade de cidadania digital.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Definição">
+      <div class="eyebrow">Conceito-chave</div>
+      <h2>O que é cidadania digital?</h2>
+      <div class="definition">Cidadania digital é a capacidade de usar tecnologias de forma crítica, ética, segura, inclusiva e participativa.</div>
+      <div class="concept-tabs" id="conceptTabs">
+        <button class="pill-btn active" data-concept="direitos">Direitos</button>
+        <button class="pill-btn" data-concept="deveres">Deveres</button>
+        <button class="pill-btn" data-concept="competencias">Competências</button>
+        <button class="pill-btn" data-concept="impactos">Impactos</button>
+      </div>
+      <div class="concept-output" id="conceptOutput"></div>
+    </section>
+
+    <section class="slide" data-title="Mapa da aula">
+      <div class="eyebrow">Mapa visual</div>
+      <h2>Quatro pilares da cidadania digital</h2>
+      <div class="connection-line">
+        <div class="connection-node"><span class="big">🤝</span><h3>Inclusão</h3><p>Acesso, acessibilidade e autonomia para participar.</p></div>
+        <div class="arrow">→</div>
+        <div class="connection-node"><span class="big">📰</span><h3>Mídias</h3><p>Leitura crítica de conteúdos, fontes e intenções.</p></div>
+        <div class="arrow">→</div>
+        <div class="connection-node"><span class="big">⚖️</span><h3>Ética</h3><p>Respeito, responsabilidade e cuidado com dados.</p></div>
+      </div>
+      <div class="prompt"><strong>Pergunta para a turma:</strong> qual desses pilares é mais desafiador para jovens hoje?</div>
+    </section>
+
+    <section class="slide" data-title="Vida conectada">
+      <div class="media-grid">
+        <figure class="media-frame">
+          <img src="https://cdn.outrank.so/6b33a22e-afe6-4bf6-bc20-09c230996607/featured-image-64ba4c64-a813-4637-8852-8664ce4a89f1.jpg" alt="Estudantes usando computadores em aula de cidadania digital" onerror="this.closest('.media-frame').classList.add('failed'); this.remove();">
+          <figcaption class="media-caption">Imagem ilustrativa: tecnologia como espaço de aprendizagem e participação.</figcaption>
+        </figure>
+        <div>
+          <div class="eyebrow">Da rotina à cidadania</div>
+          <h2>O digital não é separado da vida real</h2>
+          <p class="lead">As ações online geram efeitos concretos: reputação, convivência, aprendizagem, acesso a serviços, mobilização social e oportunidades profissionais.</p>
+          <div class="card-grid two">
+            <div class="card"><div class="icon-circle">📚</div><h3>Aprender</h3><p>Pesquisar, estudar, comparar fontes e construir conhecimento.</p></div>
+            <div class="card"><div class="icon-circle">💬</div><h3>Conviver</h3><p>Conversar, discordar, colaborar e resolver conflitos.</p></div>
+            <div class="card"><div class="icon-circle">💳</div><h3>Acessar serviços</h3><p>Bancos, governo digital, compras e documentos.</p></div>
+            <div class="card"><div class="icon-circle">📣</div><h3>Participar</h3><p>Defender causas, votar, opinar e mobilizar pessoas.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Inclusão digital">
+      <div class="eyebrow">Inclusão digital</div>
+      <h2>Ter internet não significa estar incluído</h2>
+      <p class="lead">Inclusão digital envolve condições materiais, acessibilidade, segurança, habilidades e capacidade de participar com autonomia.</p>
+      <div class="card-grid four">
+        <div class="card"><div class="icon-circle">📶</div><h3>Acesso</h3><p>Conexão estável, dispositivos e energia.</p></div>
+        <div class="card"><div class="icon-circle">♿</div><h3>Acessibilidade</h3><p>Ferramentas adaptadas para diferentes necessidades.</p></div>
+        <div class="card"><div class="icon-circle">🧑‍🏫</div><h3>Letramento</h3><p>Saber buscar, avaliar, produzir e resolver problemas.</p></div>
+        <div class="card"><div class="icon-circle">🛡️</div><h3>Segurança</h3><p>Usar a tecnologia sem exposição desnecessária.</p></div>
+      </div>
+      <div class="prompt"><strong>Exemplo:</strong> um aluno pode ter celular, mas não conseguir editar um documento, identificar golpe ou acessar uma plataforma escolar com autonomia.</div>
+    </section>
+
+    <section class="slide" data-title="Mídias digitais">
+      <div class="media-grid">
+        <div>
+          <div class="eyebrow">Uso crítico das mídias</div>
+          <h2>Nem tudo que aparece na tela merece confiança</h2>
+          <p class="lead">As mídias digitais misturam informação, opinião, publicidade, entretenimento e manipulação emocional.</p>
+          <div class="stack">
+            <div class="fact-row"><b>Fonte</b><span>Quem publicou? É confiável?</span></div>
+            <div class="fact-row"><b>Data</b><span>É atual ou antigo circulando como novidade?</span></div>
+            <div class="fact-row"><b>Intenção</b><span>Quer informar, vender, atacar ou manipular?</span></div>
+            <div class="fact-row"><b>Evidência</b><span>Mostra dados, documentos, fontes e contexto?</span></div>
+          </div>
+        </div>
+        <figure class="media-frame">
+          <img src="https://i0.wp.com/www.publicsource.org/wp-content/uploads/2024/10/20240925-Teaching-Civics-Election-Teens-08.jpg?fit=1800%2C1198&ssl=1" alt="Estudantes pesquisando e avaliando informações em aula" onerror="this.closest('.media-frame').classList.add('failed'); this.remove();">
+          <figcaption class="media-caption">Imagem ilustrativa: leitura crítica e checagem de informações.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Roteiro de checagem">
+      <div class="eyebrow">Ferramenta prática</div>
+      <h2>Checklist antes de compartilhar</h2>
+      <div class="card-grid two">
+        <button class="flow-card" data-flow="fonte"><span class="flow-icon">🔎</span><h3>1. Verifique a fonte</h3><p>Veja autor, site, instituição e reputação.</p></button>
+        <button class="flow-card" data-flow="data"><span class="flow-icon">🕒</span><h3>2. Confira a data</h3><p>Conteúdos antigos podem ser usados fora de contexto.</p></button>
+        <button class="flow-card" data-flow="evidencia"><span class="flow-icon">📎</span><h3>3. Procure evidências</h3><p>Dados, documentos, links e fontes independentes.</p></button>
+        <button class="flow-card" data-flow="emocao"><span class="flow-icon">⚠️</span><h3>4. Desconfie da urgência</h3><p>Mensagens com medo e raiva costumam reduzir o pensamento crítico.</p></button>
+      </div>
+      <div class="flow-example" id="flowExample">Clique em uma etapa para ver um exemplo de uso em sala.</div>
+    </section>
+
+    <section class="slide" data-title="Algoritmos">
+      <div class="media-grid">
+        <figure class="media-frame">
+          <img src="https://media.easy-peasy.ai/7cadfabc-ccfc-490a-a41f-bb6c31eebcd1/30bd93d4-e43e-4544-859a-5f3692b167ac.png" alt="Estudantes em uma aula de letramento midiático digital" onerror="this.closest('.media-frame').classList.add('failed'); this.remove();">
+          <figcaption class="media-caption">Imagem ilustrativa: tecnologia, mídias e aprendizagem colaborativa.</figcaption>
+        </figure>
+        <div>
+          <div class="eyebrow">O que aparece para mim?</div>
+          <h2>Algoritmos ajudam, mas também influenciam</h2>
+          <p class="lead">Plataformas podem recomendar conteúdos com base em cliques, curtidas, tempo de tela, localização, buscas e interações.</p>
+          <div class="stack">
+            <div class="fact-row"><b>Benefício</b><span>Facilitam encontrar conteúdos úteis e personalizados.</span></div>
+            <div class="fact-row"><b>Risco</b><span>Podem reforçar bolhas, vícios de atenção e polarização.</span></div>
+            <div class="fact-row"><b>Atitude crítica</b><span>Buscar perspectivas diferentes e controlar o tempo de uso.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Ética digital">
+      <div class="eyebrow">Ética digital</div>
+      <h2>O teste dos 5 segundos antes de postar</h2>
+      <p class="lead">Antes de publicar, comentar ou encaminhar, pare rapidamente e faça cinco perguntas.</p>
+      <div class="timeline-shell">
+        <div class="timeline-buttons" id="ethicsButtons"></div>
+        <div class="timeline-detail">
+          <div class="timeline-year" id="ethicsNumber">01</div>
+          <h3 id="ethicsTitle">É verdadeiro?</h3>
+          <p id="ethicsText">Publicar algo falso, mesmo sem intenção, pode prejudicar pessoas e comunidades.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Privacidade">
+      <div class="eyebrow">Privacidade e pegada digital</div>
+      <h2>O que você deixa pelo caminho?</h2>
+      <div class="card-grid three">
+        <div class="card"><div class="icon-circle">📍</div><h3>Localização</h3><p>Postagens e apps podem revelar onde você está ou frequenta.</p></div>
+        <div class="card"><div class="icon-circle">📸</div><h3>Imagem</h3><p>Fotos e vídeos podem circular além do público pretendido.</p></div>
+        <div class="card"><div class="icon-circle">🔎</div><h3>Buscas</h3><p>Pesquisas e cliques ajudam plataformas a criar perfis.</p></div>
+        <div class="card"><div class="icon-circle">💬</div><h3>Comentários</h3><p>O que você escreve pode afetar reputação e relacionamentos.</p></div>
+        <div class="card"><div class="icon-circle">🛒</div><h3>Consumo</h3><p>Compras, anúncios e preferências formam rastros digitais.</p></div>
+        <div class="card"><div class="icon-circle">🔐</div><h3>Dados pessoais</h3><p>Nome, CPF, telefone e endereço exigem cuidado especial.</p></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Participação democrática">
+      <div class="media-grid">
+        <div>
+          <div class="eyebrow">Tecnologia e democracia</div>
+          <h2>Participar é mais do que opinar</h2>
+          <p class="lead">O ambiente digital pode ampliar vozes, organizar causas e aproximar cidadãos de decisões públicas. Mas também pode espalhar desinformação e ataques.</p>
+          <div class="card-grid two">
+            <div class="card"><h3 class="green">Pode fortalecer</h3><p>Consultas públicas, campanhas, transparência, denúncias e mobilização.</p></div>
+            <div class="card"><h3 class="red">Pode prejudicar</h3><p>Boatos, discurso de ódio, manipulação, exposição indevida e ataques coordenados.</p></div>
+          </div>
+        </div>
+        <figure class="media-frame">
+          <img src="https://storage.googleapis.com/worksheetzone/wordpress_uploads_media/worksheetzone_blog_media/2025/12/digital-citizenship-mini-lesson.jpg" alt="Aula sobre segurança e cidadania digital" onerror="this.closest('.media-frame').classList.add('failed'); this.remove();">
+          <figcaption class="media-caption">Imagem ilustrativa: convivência, respeito e participação no ambiente digital.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Estudo de caso">
+      <div class="eyebrow">Estudo de caso</div>
+      <h2>Campanha online da turma</h2>
+      <p class="lead">A turma quer criar uma campanha digital para solicitar melhoria no transporte escolar. Como transformar uma reclamação em participação cidadã?</p>
+      <div class="scenario-display">
+        <div class="scenario-side">
+          <div class="big">✅</div>
+          <h3>Boas práticas</h3>
+          <ul>
+            <li>usar dados verificáveis;</li>
+            <li>evitar ataques pessoais;</li>
+            <li>preservar imagem de colegas;</li>
+            <li>apresentar proposta clara;</li>
+            <li>buscar canais oficiais.</li>
+          </ul>
+        </div>
+        <div class="scenario-side">
+          <div class="big">⚠️</div>
+          <h3>Riscos</h3>
+          <ul>
+            <li>exposição indevida de pessoas;</li>
+            <li>informações falsas;</li>
+            <li>comentários ofensivos;</li>
+            <li>polarização sem diálogo;</li>
+            <li>perda do objetivo principal.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Jogo: classifique">
+      <div class="eyebrow">Atividade interativa</div>
+      <h2>Classifique as atitudes digitais</h2>
+      <p class="lead">Clique em uma atitude e depois na categoria correta. O objetivo é discutir escolhas, não apenas decorar regras.</p>
+      <div class="drag-shell">
+        <div>
+          <div class="draggables" id="dragItems"></div>
+          <div class="game-status"><span id="gameScore">0 acertos</span><button class="secondary-btn" id="resetGame">Reiniciar</button></div>
+        </div>
+        <div class="drop-zones">
+          <div class="drop-zone" data-zone="responsavel"><b>✅ Atitude responsável</b><div class="placed-labels"></div></div>
+          <div class="drop-zone" data-zone="arriscada"><b>⚠️ Atitude arriscada</b><div class="placed-labels"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Situações rápidas">
+      <div class="eyebrow">Checagem rápida</div>
+      <h2>Responsável ou arriscado?</h2>
+      <div class="quick-checks" id="quickChecks">
+        <div class="quick-row" data-answer="arriscada">
+          <p>“Recebi uma notícia alarmante e encaminhei sem abrir o link.”</p>
+          <div class="quick-actions"><button data-choice="responsavel">Responsável</button><button data-choice="arriscada">Arriscada</button></div>
+          <div class="quick-result">Arriscada: mensagens alarmantes precisam de verificação antes de circular.</div>
+        </div>
+        <div class="quick-row" data-answer="responsavel">
+          <p>“Discordei de alguém usando argumentos, sem ofender.”</p>
+          <div class="quick-actions"><button data-choice="responsavel">Responsável</button><button data-choice="arriscada">Arriscada</button></div>
+          <div class="quick-result">Responsável: discordância pode existir com respeito.</div>
+        </div>
+        <div class="quick-row" data-answer="arriscada">
+          <p>“Publiquei foto de um colega sem pedir autorização.”</p>
+          <div class="quick-actions"><button data-choice="responsavel">Responsável</button><button data-choice="arriscada">Arriscada</button></div>
+          <div class="quick-result">Arriscada: imagem de outras pessoas exige cuidado e consentimento.</div>
+        </div>
+        <div class="quick-row" data-answer="responsavel">
+          <p>“Usei um texto encontrado na internet e citei a fonte.”</p>
+          <div class="quick-actions"><button data-choice="responsavel">Responsável</button><button data-choice="arriscada">Arriscada</button></div>
+          <div class="quick-result">Responsável: reconhecer autoria é parte da ética digital.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Código da turma">
+      <div class="eyebrow">Produção coletiva</div>
+      <h2>Código de conduta digital da turma</h2>
+      <div class="card-grid three">
+        <div class="card"><div class="icon-circle">1</div><h3>Pensar antes de postar</h3><p>Conteúdos online podem circular por muito tempo.</p></div>
+        <div class="card"><div class="icon-circle">2</div><h3>Checar antes de compartilhar</h3><p>Informação sem fonte confiável pode causar danos.</p></div>
+        <div class="card"><div class="icon-circle">3</div><h3>Respeitar diferenças</h3><p>Discordar não autoriza humilhar ou atacar.</p></div>
+        <div class="card"><div class="icon-circle">4</div><h3>Proteger dados</h3><p>Dados pessoais não devem ser expostos sem necessidade.</p></div>
+        <div class="card"><div class="icon-circle">5</div><h3>Reconhecer autoria</h3><p>Copiar sem crédito prejudica criadores e viola direitos.</p></div>
+        <div class="card"><div class="icon-circle">6</div><h3>Participar com propósito</h3><p>Usar tecnologia para aprender, colaborar e melhorar a comunidade.</p></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Direitos e deveres">
+      <div class="eyebrow">Síntese aplicada</div>
+      <h2>Direitos e deveres digitais</h2>
+      <div class="card-grid two">
+        <div class="card">
+          <div class="icon-circle">✅</div>
+          <h3 class="green">Direitos</h3>
+          <ul>
+            <li>acessar informação e serviços;</li>
+            <li>expressar opiniões com responsabilidade;</li>
+            <li>ter privacidade e proteção de dados;</li>
+            <li>usar tecnologias acessíveis.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="icon-circle">⚖️</div>
+          <h3 class="amber">Deveres</h3>
+          <ul>
+            <li>respeitar outras pessoas;</li>
+            <li>não compartilhar desinformação;</li>
+            <li>proteger dados próprios e de terceiros;</li>
+            <li>reconhecer autoria e direitos.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="prompt"><strong>Fechamento:</strong> ser cidadão digital é usar tecnologia com autonomia, respeito, criticidade e responsabilidade social.</div>
+    </section>
+
+    <section class="slide" data-title="Mapa mental">
+      <div class="eyebrow">Mapa mental final</div>
+      <h2>O capítulo em uma frase</h2>
+      <div class="definition">Tecnologia amplia possibilidades, mas exige ética, inclusão, pensamento crítico e participação consciente.</div>
+      <div class="connection-line">
+        <div class="connection-node"><span class="big">🧠</span><h3>Pensar</h3><p>Questionar fontes, algoritmos e impactos.</p></div>
+        <div class="arrow">→</div>
+        <div class="connection-node"><span class="big">🤝</span><h3>Conviver</h3><p>Agir com respeito e empatia.</p></div>
+        <div class="arrow">→</div>
+        <div class="connection-node"><span class="big">🌎</span><h3>Participar</h3><p>Usar a tecnologia para melhorar a comunidade.</p></div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Quiz">
+      <div class="eyebrow">Quiz gamificado</div>
+      <h2>Quiz final — 10 perguntas</h2>
+      <div class="quiz-shell">
+        <div class="quiz-head">
+          <span id="quizCounter">Pergunta 1 de 10</span>
+          <div class="quiz-mini-progress"><div id="quizProgress"></div></div>
+          <span id="quizScore">0 pts</span>
+        </div>
+        <div class="quiz-card" id="quizCard">
+          <h3 id="quizQuestion"></h3>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeedback">Escolha uma alternativa para começar.</div>
+          <div class="quiz-actions">
+            <button class="primary-btn" id="nextQuizBtn" disabled>Próxima</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-title="Encerramento">
+      <div class="eyebrow">Fechamento</div>
+      <h2>Para levar da aula</h2>
+      <div class="card-grid three">
+        <div class="card"><div class="icon-circle">🔎</div><h3>Verifique</h3><p>Nem tudo que circula é confiável.</p></div>
+        <div class="card"><div class="icon-circle">🤝</div><h3>Respeite</h3><p>A tela não elimina a responsabilidade com o outro.</p></div>
+        <div class="card"><div class="icon-circle">🗳️</div><h3>Participe</h3><p>A internet também é espaço de cidadania.</p></div>
+      </div>
+      <div class="prompt"><strong>Atividade pós-aula:</strong> peça que cada aluno escreva uma regra para o código de conduta digital da turma.</div>
+    </section>
+
+  </main>
+
+  <footer class="controls">
+    <div class="teacher">Professor Raimundo · Slide HTML interativo · Capítulo 1</div>
+    <div class="nav-group">
+      <button class="nav-btn" id="prevBtn">← <span class="nav-text">Anterior</span></button>
+      <button class="nav-btn next" id="nextBtn"><span class="nav-text">Próximo</span> →</button>
+    </div>
+    <div class="key-hint">Atalhos: ← → · espaço · F · O</div>
+  </footer>
+
+  <div class="modal" id="overviewModal" role="dialog" aria-modal="true" aria-labelledby="overviewTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="overviewTitle">Visão geral dos slides</h2>
+        <button class="icon-btn close-modal" aria-label="Fechar">×</button>
+      </div>
+      <div class="overview-grid" id="overviewGrid"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="sourcesModal" role="dialog" aria-modal="true" aria-labelledby="sourcesTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="sourcesTitle">Fontes e créditos</h2>
+        <button class="icon-btn close-modal" aria-label="Fechar">×</button>
+      </div>
+      <div class="sources-list">
+        <div class="source-item"><b>Livro digital — Editora AJS</b><p>Capítulo 1: comportamento ético e responsável no mundo digital, inclusão, uso crítico das mídias e participação ativa na sociedade.</p></div>
+        <div class="source-item"><b>Imagens</b><p>Imagens externas usadas com finalidade didática e ilustrativa. Se alguma imagem não carregar, o slide permanece funcional.</p></div>
+        <div class="source-item"><b>Modelo visual</b><p>Baseado no padrão adotado para os slides de Música/Informática Básica: navegação tipo PowerPoint, topbar, visão geral, fontes, ajuda, tela cheia, imagens e atividades interativas.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="helpModal" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="helpTitle">Ajuda e atalhos</h2>
+        <button class="icon-btn close-modal" aria-label="Fechar">×</button>
+      </div>
+      <div class="help-grid">
+        <div class="card"><h3>Navegação</h3><p><kbd>→</kbd> próximo · <kbd>←</kbd> anterior · <kbd>Espaço</kbd> avançar</p></div>
+        <div class="card"><h3>Apresentação</h3><p><kbd>F</kbd> tela cheia · <kbd>O</kbd> visão geral · <kbd>?</kbd> ajuda</p></div>
+        <div class="card"><h3>Interações</h3><p>Clique em cartões, botões e alternativas do quiz para ativar respostas.</p></div>
+        <div class="card"><h3>Dica de aula</h3><p>Use as atividades como pausas para debate rápido em duplas ou grupos.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const slides = [...document.querySelectorAll('.slide')];
+    const progressBar = document.getElementById('progressBar');
+    const slideCount = document.getElementById('slideCount');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    let current = 0;
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function goToSlide(index) {
+      const next = Math.max(0, Math.min(index, slides.length - 1));
+      if (next === current) return;
+      slides[current].classList.toggle('leaving-left', next > current);
+      slides[current].classList.remove('active');
+      current = next;
+      slides[current].classList.add('active');
+      updateUI();
+    }
+
+    function updateUI() {
+      slideCount.textContent = `${current + 1} / ${slides.length}`;
+      progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
+      prevBtn.disabled = current === 0;
+      nextBtn.disabled = current === slides.length - 1;
+      document.querySelectorAll('.overview-item').forEach((btn, i) => btn.classList.toggle('current', i === current));
+    }
+
+    prevBtn.addEventListener('click', () => goToSlide(current - 1));
+    nextBtn.addEventListener('click', () => goToSlide(current + 1));
+
+    document.addEventListener('keydown', (e) => {
+      if (document.querySelector('.modal.open')) {
+        if (e.key === 'Escape') closeModals();
+        return;
+      }
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); goToSlide(current + 1); }
+      if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); goToSlide(current - 1); }
+      if (e.key.toLowerCase() === 'f') toggleFullscreen();
+      if (e.key.toLowerCase() === 'o') openModal('overviewModal');
+      if (e.key === '?') openModal('helpModal');
+    });
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    }
+    document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+    function closeModals() {
+      document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
+    }
+    document.getElementById('overviewBtn').addEventListener('click', () => openModal('overviewModal'));
+    document.getElementById('sourcesBtn').addEventListener('click', () => openModal('sourcesModal'));
+    document.getElementById('helpBtn').addEventListener('click', () => openModal('helpModal'));
+    document.querySelectorAll('.close-modal').forEach(btn => btn.addEventListener('click', closeModals));
+    document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', (e) => { if (e.target === m) closeModals(); }));
+
+    const overviewGrid = document.getElementById('overviewGrid');
+    slides.forEach((slide, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'overview-item';
+      btn.innerHTML = `<small>Slide ${i + 1}</small><span>${slide.dataset.title || 'Sem título'}</span>`;
+      btn.addEventListener('click', () => { closeModals(); goToSlide(i); });
+      overviewGrid.appendChild(btn);
+    });
+
+    document.querySelectorAll('#warmupCards .toggle-card').forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('found');
+        const total = document.querySelectorAll('#warmupCards .toggle-card').length;
+        const found = document.querySelectorAll('#warmupCards .toggle-card.found').length;
+        if (found === total) showToast('Perfeito! Tudo isso faz parte da cidadania digital.');
+      });
+    });
+
+    const conceptData = {
+      direitos: 'Direitos digitais envolvem acesso à informação, liberdade de expressão com responsabilidade, privacidade, proteção de dados e uso de tecnologias acessíveis.',
+      deveres: 'Deveres digitais envolvem respeitar pessoas, não divulgar desinformação, proteger dados próprios e de terceiros, reconhecer autoria e evitar ataques.',
+      competencias: 'Competências digitais incluem pesquisar, avaliar fontes, produzir conteúdo, colaborar, resolver problemas, compreender algoritmos e agir com segurança.',
+      impactos: 'As tecnologias moldam relações sociais, consumo, trabalho, estudo, cultura e participação democrática. Por isso, precisam ser usadas com pensamento crítico.'
+    };
+    const conceptOutput = document.getElementById('conceptOutput');
+    function setConcept(key) {
+      document.querySelectorAll('#conceptTabs .pill-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.concept === key));
+      conceptOutput.textContent = conceptData[key];
+    }
+    document.querySelectorAll('#conceptTabs .pill-btn').forEach(btn => btn.addEventListener('click', () => setConcept(btn.dataset.concept)));
+    setConcept('direitos');
+
+    const flowExamples = {
+      fonte: 'Exemplo: “Esse site é conhecido? Há autor? A notícia aparece em outros veículos confiáveis?”',
+      data: 'Exemplo: “Esse vídeo é de hoje ou foi gravado em outro contexto e republicado agora?”',
+      evidencia: 'Exemplo: “O post mostra documentos, dados ou apenas afirmações sem comprovação?”',
+      emocao: 'Exemplo: “A mensagem tenta me deixar com medo ou raiva para eu compartilhar sem pensar?”'
+    };
+    document.querySelectorAll('.flow-card').forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll('.flow-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        document.getElementById('flowExample').textContent = flowExamples[card.dataset.flow];
+      });
+    });
+
+    const ethics = [
+      {n:'01', t:'É verdadeiro?', d:'Publicar algo falso, mesmo sem intenção, pode prejudicar pessoas e comunidades.'},
+      {n:'02', t:'É necessário?', d:'Nem todo conteúdo precisa ser publicado. Às vezes, a melhor ação é não expor.'},
+      {n:'03', t:'É respeitoso?', d:'Discordar é legítimo; humilhar, ameaçar ou perseguir alguém não é.'},
+      {n:'04', t:'É seguro?', d:'Cuidado com dados pessoais, localização, imagens e informações sensíveis.'},
+      {n:'05', t:'Eu assumiria isso publicamente?', d:'Se você não diria pessoalmente ou em público, talvez não deva publicar.'}
+    ];
+    const ethicsButtons = document.getElementById('ethicsButtons');
+    ethics.forEach((item, i) => {
+      const b = document.createElement('button');
+      b.className = 'time-btn';
+      b.innerHTML = `<strong>${item.n}</strong>${item.t}`;
+      b.addEventListener('click', () => setEthics(i));
+      ethicsButtons.appendChild(b);
+    });
+    function setEthics(i) {
+      document.querySelectorAll('#ethicsButtons .time-btn').forEach((b, idx) => b.classList.toggle('active', idx === i));
+      document.getElementById('ethicsNumber').textContent = ethics[i].n;
+      document.getElementById('ethicsTitle').textContent = ethics[i].t;
+      document.getElementById('ethicsText').textContent = ethics[i].d;
+    }
+    setEthics(0);
+
+    const gameItems = [
+      {label:'Citar fonte de imagem', zone:'responsavel'},
+      {label:'Encaminhar boato urgente', zone:'arriscada'},
+      {label:'Pedir autorização para foto', zone:'responsavel'},
+      {label:'Expor print de conversa', zone:'arriscada'},
+      {label:'Usar senha forte', zone:'responsavel'},
+      {label:'Atacar colega nos comentários', zone:'arriscada'}
+    ];
+    const dragItems = document.getElementById('dragItems');
+    let selectedItem = null;
+    let gameHits = 0;
+    function renderGame() {
+      dragItems.innerHTML = '';
+      selectedItem = null;
+      gameHits = 0;
+      document.getElementById('gameScore').textContent = '0 acertos';
+      document.querySelectorAll('.placed-labels').forEach(z => z.textContent = '');
+      gameItems.forEach((item, i) => {
+        const div = document.createElement('div');
+        div.className = 'drag-item';
+        div.textContent = item.label;
+        div.dataset.index = i;
+        div.draggable = true;
+        div.addEventListener('click', () => selectDrag(div));
+        div.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', i));
+        dragItems.appendChild(div);
+      });
+    }
+    function selectDrag(el) {
+      document.querySelectorAll('.drag-item').forEach(x => x.classList.remove('selected'));
+      selectedItem = Number(el.dataset.index);
+      el.classList.add('selected');
+    }
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+      zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+      zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        placeItem(Number(e.dataTransfer.getData('text/plain')), zone);
+      });
+      zone.addEventListener('click', () => {
+        if (selectedItem !== null) placeItem(selectedItem, zone);
+      });
+    });
+    function placeItem(i, zone) {
+      const item = gameItems[i];
+      const el = document.querySelector(`.drag-item[data-index="${i}"]`);
+      if (!el || el.classList.contains('placed')) return;
+      if (item.zone === zone.dataset.zone) {
+        el.classList.add('placed');
+        zone.querySelector('.placed-labels').innerHTML += `• ${item.label}<br>`;
+        gameHits++;
+        document.getElementById('gameScore').textContent = `${gameHits} acertos`;
+        showToast('Boa! Classificação correta.');
+        if (gameHits === gameItems.length) showToast('Excelente! Todas as atitudes foram classificadas.');
+      } else {
+        showToast('Quase! Discuta com a turma e tente outra categoria.');
+      }
+      selectedItem = null;
+      document.querySelectorAll('.drag-item').forEach(x => x.classList.remove('selected'));
+    }
+    document.getElementById('resetGame').addEventListener('click', renderGame);
+    renderGame();
+
+    document.querySelectorAll('.quick-row').forEach(row => {
+      row.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          row.classList.add('answered');
+          const ok = btn.dataset.choice === row.dataset.answer;
+          row.classList.toggle('correct', ok);
+          row.classList.toggle('wrong', !ok);
+        });
+      });
+    });
+
+    const quiz = [
+      {q:'O que significa cidadania digital?', o:['Ter muitos seguidores', 'Participar do mundo digital com direitos, deveres, ética e responsabilidade', 'Usar apenas aplicativos de mensagem', 'Evitar qualquer tecnologia'], a:1, exp:'Cidadania digital envolve participação consciente, crítica, segura e ética.'},
+      {q:'Inclusão digital envolve principalmente:', o:['Apenas possuir celular', 'Acesso, acessibilidade, letramento e autonomia', 'Usar redes sociais todos os dias', 'Ter o aparelho mais moderno'], a:1, exp:'Inclusão digital é mais ampla que equipamento: envolve condições de uso e participação.'},
+      {q:'Antes de compartilhar uma notícia, o mais adequado é:', o:['Enviar rápido para ajudar', 'Verificar fonte, data, contexto e evidências', 'Confiar no título', 'Compartilhar se muitas pessoas já enviaram'], a:1, exp:'Checagem reduz desinformação e fortalece o uso crítico das mídias.'},
+      {q:'Qual atitude demonstra ética digital?', o:['Expor alguém para ganhar curtidas', 'Comentar discordando com respeito', 'Copiar conteúdo sem crédito', 'Enviar prints privados para grupos'], a:1, exp:'É possível discordar sem atacar, humilhar ou violar direitos.'},
+      {q:'Pegada digital é:', o:['Um tipo de cabo', 'O conjunto de rastros deixados em atividades online', 'Uma marca de smartphone', 'Um antivírus'], a:1, exp:'Pesquisas, publicações, cliques e cadastros formam rastros digitais.'},
+      {q:'Algoritmos podem influenciar:', o:['Somente a velocidade da internet', 'O que vemos, consumimos e debatemos online', 'Apenas arquivos salvos', 'A quantidade de memória do computador'], a:1, exp:'Recomendações personalizadas podem impactar escolhas e opiniões.'},
+      {q:'Participação democrática digital pode incluir:', o:['Campanhas, consultas públicas e debates informados', 'Ataques pessoais', 'Boatos em grupos', 'Compartilhamento sem leitura'], a:0, exp:'A tecnologia pode ampliar participação cidadã quando usada com responsabilidade.'},
+      {q:'Um risco para a democracia no ambiente digital é:', o:['Acesso a serviços públicos', 'Debate respeitoso', 'Desinformação e manipulação', 'Consulta pública online'], a:2, exp:'Desinformação, discurso de ódio e manipulação prejudicam o debate público.'},
+      {q:'Uso crítico das mídias exige perguntar:', o:['Quem publicou, com qual intenção e com quais evidências', 'Quantas curtidas recebeu', 'Se combina com minha opinião', 'Se a imagem é bonita'], a:0, exp:'Fonte, intenção, contexto e evidências são elementos essenciais da análise crítica.'},
+      {q:'A ideia central do capítulo é:', o:['Tecnologia dispensa responsabilidade humana', 'Tudo que viraliza é confiável', 'A vida digital exige ética, inclusão, pensamento crítico e participação consciente', 'O mundo digital deve ser evitado'], a:2, exp:'O capítulo relaciona tecnologia, responsabilidade, participação social e pensamento crítico.'}
+    ];
+    let quizIndex = 0, quizPoints = 0, quizLocked = false;
+    const quizCounter = document.getElementById('quizCounter');
+    const quizScore = document.getElementById('quizScore');
+    const quizProgress = document.getElementById('quizProgress');
+    const quizQuestion = document.getElementById('quizQuestion');
+    const quizOptions = document.getElementById('quizOptions');
+    const quizFeedback = document.getElementById('quizFeedback');
+    const nextQuizBtn = document.getElementById('nextQuizBtn');
+
+    function renderQuiz() {
+      quizLocked = false;
+      const item = quiz[quizIndex];
+      quizCounter.textContent = `Pergunta ${quizIndex + 1} de ${quiz.length}`;
+      quizScore.textContent = `${quizPoints} pts`;
+      quizProgress.style.width = `${(quizIndex / quiz.length) * 100}%`;
+      quizQuestion.textContent = item.q;
+      quizFeedback.className = 'quiz-feedback';
+      quizFeedback.textContent = 'Escolha uma alternativa.';
+      nextQuizBtn.disabled = true;
+      nextQuizBtn.textContent = quizIndex === quiz.length - 1 ? 'Ver resultado' : 'Próxima';
+      quizOptions.innerHTML = '';
+      item.o.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => answerQuiz(i, btn));
+        quizOptions.appendChild(btn);
+      });
+    }
+    function answerQuiz(choice, btn) {
+      if (quizLocked) return;
+      quizLocked = true;
+      const item = quiz[quizIndex];
+      const buttons = [...document.querySelectorAll('.quiz-option')];
+      buttons.forEach(b => b.disabled = true);
+      buttons[item.a].classList.add('correct');
+      if (choice === item.a) {
+        quizPoints++;
+        quizFeedback.className = 'quiz-feedback good';
+        quizFeedback.textContent = `Correto! ${item.exp}`;
+      } else {
+        btn.classList.add('wrong');
+        quizFeedback.className = 'quiz-feedback bad';
+        quizFeedback.textContent = `Ainda não. ${item.exp}`;
+      }
+      quizScore.textContent = `${quizPoints} pts`;
+      nextQuizBtn.disabled = false;
+    }
+    function showQuizResult() {
+      quizProgress.style.width = '100%';
+      const msg = quizPoints >= 9 ? 'Excelente! A turma dominou cidadania digital.' :
+                  quizPoints >= 7 ? 'Muito bom! Vale revisar alguns detalhes.' :
+                  quizPoints >= 5 ? 'Bom começo. Vamos reforçar os conceitos principais.' :
+                  'Vamos revisar juntos e tentar novamente.';
+      document.getElementById('quizCard').innerHTML = `
+        <div class="result-panel">
+          <div>
+            <div class="result-score">${quizPoints}/10</div>
+            <h3>${msg}</h3>
+            <p>O importante é sair da aula com mais autonomia, responsabilidade e pensamento crítico.</p>
+            <button class="primary-btn" id="restartQuiz">Refazer quiz</button>
+          </div>
+        </div>`;
+      document.getElementById('restartQuiz').addEventListener('click', () => {
+        quizIndex = 0; quizPoints = 0;
+        document.getElementById('quizCard').innerHTML = `
+          <h3 id="quizQuestion"></h3>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback" id="quizFeedback">Escolha uma alternativa para começar.</div>
+          <div class="quiz-actions"><button class="primary-btn" id="nextQuizBtn" disabled>Próxima</button></div>`;
+        window.quizQuestion = document.getElementById('quizQuestion');
+        window.quizOptions = document.getElementById('quizOptions');
+        window.quizFeedback = document.getElementById('quizFeedback');
+        window.nextQuizBtn = document.getElementById('nextQuizBtn');
+        document.getElementById('nextQuizBtn').addEventListener('click', quizNextHandler);
+        renderQuizPatched();
+      });
+    }
+    function renderQuizPatched() {
+      const qQuestion = document.getElementById('quizQuestion');
+      const qOptions = document.getElementById('quizOptions');
+      const qFeedback = document.getElementById('quizFeedback');
+      const qNext = document.getElementById('nextQuizBtn');
+      quizLocked = false;
+      const item = quiz[quizIndex];
+      quizCounter.textContent = `Pergunta ${quizIndex + 1} de ${quiz.length}`;
+      quizScore.textContent = `${quizPoints} pts`;
+      quizProgress.style.width = `${(quizIndex / quiz.length) * 100}%`;
+      qQuestion.textContent = item.q;
+      qFeedback.className = 'quiz-feedback';
+      qFeedback.textContent = 'Escolha uma alternativa.';
+      qNext.disabled = true;
+      qNext.textContent = quizIndex === quiz.length - 1 ? 'Ver resultado' : 'Próxima';
+      qOptions.innerHTML = '';
+      item.o.forEach((opt, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = opt;
+        btn.addEventListener('click', () => {
+          if (quizLocked) return;
+          quizLocked = true;
+          const buttons = [...document.querySelectorAll('.quiz-option')];
+          buttons.forEach(b => b.disabled = true);
+          buttons[item.a].classList.add('correct');
+          if (i === item.a) {
+            quizPoints++;
+            qFeedback.className = 'quiz-feedback good';
+            qFeedback.textContent = `Correto! ${item.exp}`;
+          } else {
+            btn.classList.add('wrong');
+            qFeedback.className = 'quiz-feedback bad';
+            qFeedback.textContent = `Ainda não. ${item.exp}`;
+          }
+          quizScore.textContent = `${quizPoints} pts`;
+          qNext.disabled = false;
+        });
+        qOptions.appendChild(btn);
+      });
+    }
+    function quizNextHandler() {
+      quizIndex++;
+      if (quizIndex < quiz.length) {
+        if (document.getElementById('quizQuestion')) renderQuizPatched();
+        else renderQuiz();
+      } else {
+        showQuizResult();
+      }
+    }
+    nextQuizBtn.addEventListener('click', quizNextHandler);
+    renderQuiz();
+
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let points = [];
+    function resizeCanvas() {
+      canvas.width = innerWidth * devicePixelRatio;
+      canvas.height = innerHeight * devicePixelRatio;
+      ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+      points = Array.from({length: 90}, () => ({
+        x: Math.random() * innerWidth,
+        y: Math.random() * innerHeight,
+        vx: (Math.random() - .5) * .42,
+        vy: (Math.random() - .5) * .42,
+        r: Math.random() * 2 + .7
+      }));
+    }
+    function drawBackground() {
+      ctx.clearRect(0,0,innerWidth,innerHeight);
+      ctx.fillStyle = 'rgba(55,215,255,.75)';
+      for (const p of points) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > innerWidth) p.vx *= -1;
+        if (p.y < 0 || p.y > innerHeight) p.vy *= -1;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+      }
+      ctx.strokeStyle = 'rgba(55,215,255,.16)';
+      for (let i=0;i<points.length;i++) {
+        for (let j=i+1;j<points.length;j++) {
+          const dx = points[i].x-points[j].x, dy = points[i].y-points[j].y, d = Math.hypot(dx,dy);
+          if (d < 120) {
+            ctx.globalAlpha = (120-d)/120;
+            ctx.beginPath(); ctx.moveTo(points[i].x,points[i].y); ctx.lineTo(points[j].x,points[j].y); ctx.stroke();
+            ctx.globalAlpha = 1;
+          }
+        }
+      }
+      requestAnimationFrame(drawBackground);
+    }
+    addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    drawBackground();
+    updateUI();
+  </script>
+</body>
+</html>

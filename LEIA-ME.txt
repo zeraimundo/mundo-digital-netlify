@@ -1,0 +1,29 @@
+MUNDO DIGITAL — SITE PARA NETLIFY DROP
+=======================================
+
+CONTEÚDO DESTE PACOTE
+- index.html                      -> página inicial
+- slides/capitulo-01.html         -> primeira aula já publicada
+
+COMO PUBLICAR NO NETLIFY DROP
+1. Descompacte este arquivo ZIP.
+2. Abra a pasta "mundo-digital-netlify".
+3. Arraste a pasta inteira para o Netlify Drop.
+4. O arquivo index.html será usado automaticamente como página inicial.
+
+COMO ADICIONAR UMA NOVA AULA
+Use SEMPRE estes nomes:
+- slides/capitulo-01.html
+- slides/capitulo-02.html
+- slides/capitulo-03.html
+...
+- slides/capitulo-12.html
+
+A página inicial testa automaticamente quais arquivos existem.
+Quando um novo arquivo for colocado em /slides e o site for republicado,
+o card correspondente muda de "Em breve" para "Disponível".
+
+IMPORTANTE
+Ao atualizar pelo Netlify Drop, mantenha a pasta local completa com os
+arquivos já publicados e acrescente o novo capítulo antes de fazer o
+novo deploy.
