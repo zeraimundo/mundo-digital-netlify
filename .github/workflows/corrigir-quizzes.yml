@@ -1,0 +1,105 @@
+name: Corrigir quizzes dos capítulos 1 a 4
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/corrigir-quizzes.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  corrigir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Atualizar quizzes
+        run: |
+          python - <<'PY'
+          import json
+          import pathlib
+          import re
+          import subprocess
+          import sys
+
+          QUIZZES = {
+            "01": [
+              {"q":"Um grupo quer fazer uma campanha on-line por melhorias na escola, mas publica fotos de colegas sem autorização. Qual análise é mais adequada?","o":["A campanha deve ser apagada porque toda mobilização digital é perigosa.","A participação pode ser legítima, mas precisa respeitar imagem, privacidade e consentimento.","Se a causa for boa, qualquer exposição é aceitável.","Fotos em ambiente escolar nunca têm relação com cidadania digital."],"a":1,"exp":"Cidadania digital envolve participação, mas também respeito a direitos e privacidade."},
+              {"q":"A liberdade de expressão no ambiente digital deve ser entendida junto com:","o":["o direito de atacar pessoas quando a opinião for forte.","a ideia de que grupos privados não têm regras.","responsabilidade, respeito, contexto e consequências sociais.","a obrigação de concordar com todos para evitar conflitos."],"a":2,"exp":"Expressar opinião é um direito, mas não elimina deveres éticos e legais."},
+              {"q":"Qual situação mostra inclusão digital de forma mais completa?","o":["Entregar celular ao aluno, mesmo sem orientação.","Garantir conexão, acessibilidade, segurança e capacidade de uso autônomo.","Permitir uso livre de redes sociais durante toda aula.","Trocar todos os livros por vídeos curtos."],"a":1,"exp":"Inclusão digital não é só acesso: envolve habilidades, acessibilidade e autonomia."},
+              {"q":"Uma postagem com muitos compartilhamentos deve ser tratada como:","o":["automaticamente confiável.","necessariamente falsa.","um conteúdo popular que ainda precisa de análise de fonte e contexto.","mais importante que qualquer fonte oficial."],"a":2,"exp":"Popularidade não substitui verificação."},
+              {"q":"Qual atitude fortalece uma participação democrática on-line?","o":["Usar dados verificáveis, respeitar pessoas e buscar canais de diálogo.","Criar pressão por ataques coordenados.","Compartilhar boatos para gerar mobilização rápida.","Expor pessoas para chamar atenção."],"a":0,"exp":"Participação cidadã combina mobilização com responsabilidade."},
+              {"q":"A pegada digital é importante porque:","o":["só existe em computadores públicos.","desaparece sempre que apagamos uma postagem.","pode influenciar reputação, perfis, oportunidades e decisões futuras.","não se relaciona com a vida real."],"a":2,"exp":"Rastros digitais podem produzir efeitos concretos."},
+              {"q":"Ao discordar de alguém em uma rede social, a melhor postura cidadã é:","o":["responder com ironia para vencer o debate.","usar argumentos, evitar ataques pessoais e aceitar revisar a própria posição.","marcar outras pessoas para pressionar o autor.","expor conversas privadas para provar o ponto."],"a":1,"exp":"Discordância pode existir sem agressão ou exposição."},
+              {"q":"Por que grupos privados também exigem ética digital?","o":["Porque prints, impactos e responsabilidades podem ultrapassar o grupo.","Porque não existe privacidade em nenhum caso.","Porque toda conversa privada é proibida.","Porque só professores podem usar grupos."],"a":0,"exp":"O alcance de uma mensagem pode sair do controle."},
+              {"q":"Qual exemplo mostra autonomia digital?","o":["Aceitar recomendações do feed sem questionar.","Seguir apenas pessoas com a mesma opinião.","Questionar fontes, controlar impulsos e buscar perspectivas diferentes.","Compartilhar rapidamente para não perder o assunto."],"a":2,"exp":"Autonomia digital exige pensamento crítico e escolha consciente."},
+              {"q":"A ideia central do capítulo é que a tecnologia deve ser usada com:","o":["memorização de comandos e pouca reflexão.","autonomia, responsabilidade, respeito e pensamento crítico.","prioridade total à velocidade de postagem.","neutralidade absoluta, sem impacto social."],"a":1,"exp":"O foco é formar participação ética e crítica no mundo digital."}
+            ],
+            "02": [
+              {"q":"Em pensamento computacional, decompor um problema significa:","o":["escolher uma resposta por tentativa.","dividir o problema em partes menores e mais manejáveis.","apagar dados difíceis do problema.","trocar lógica por opinião."],"a":1,"exp":"Decomposição facilita entender, distribuir e resolver partes do problema."},
+              {"q":"A abstração é útil quando:","o":["remove elementos irrelevantes sem esconder aspectos essenciais.","elimina todas as informações do problema.","impede que a solução seja testada.","transforma todo problema em programação."],"a":0,"exp":"Boa abstração simplifica sem distorcer."},
+              {"q":"Qual alternativa descreve melhor um algoritmo?","o":["Uma sequência clara, finita e ordenada de passos.","Um desenho bonito da interface.","Uma opinião sobre como resolver algo.","Um erro que ocorre no computador."],"a":0,"exp":"Algoritmo organiza passos para alcançar um objetivo."},
+              {"q":"Reconhecer padrões ajuda porque:","o":["substitui completamente os testes.","permite reaproveitar soluções e prever situações semelhantes.","prova que todos os casos são iguais.","elimina a necessidade de entender o problema."],"a":1,"exp":"Padrões ajudam, mas precisam ser validados."},
+              {"q":"Um caso-limite em uma solução é:","o":["um cenário extremo ou de fronteira usado para testar se a regra ainda funciona.","a primeira resposta encontrada na internet.","uma etapa que não precisa ser executada.","um detalhe decorativo do algoritmo."],"a":0,"exp":"Casos-limite revelam falhas que exemplos comuns escondem."},
+              {"q":"Se um algoritmo para organizar nomes falha quando há nomes compostos, o problema provável é:","o":["excesso de cores na planilha.","falta de previsão de variações de entrada.","uso correto de decomposição.","teste em muitos cenários."],"a":1,"exp":"Entradas reais variam; a solução precisa considerar isso."},
+              {"q":"Pseudocódigo é útil porque:","o":["representa a lógica sem depender de uma linguagem específica.","substitui todo teste da solução.","deve ser ambíguo para permitir criatividade.","só funciona dentro de uma planilha."],"a":0,"exp":"Pseudocódigo foca no raciocínio antes da sintaxe."},
+              {"q":"Qual sequência representa melhor a resolução de um problema?","o":["copiar, colar, publicar, esquecer.","definir problema, decompor, reconhecer padrões, abstrair, criar e testar solução.","escolher ferramenta, ignorar dados e finalizar.","começar pela resposta final."],"a":1,"exp":"A solução melhora quando segue um processo lógico."},
+              {"q":"Um algoritmo ambíguo é problemático porque:","o":["pode gerar interpretações diferentes e resultados inconsistentes.","fica mais fácil de testar.","sempre produz respostas melhores.","elimina exceções automaticamente."],"a":0,"exp":"Algoritmos precisam de instruções claras."},
+              {"q":"Pensamento computacional é importante fora da programação porque:","o":["ajuda a estruturar decisões e resolver problemas em várias áreas.","só serve para criar jogos.","dispensa trabalho em equipe.","funciona apenas com computador ligado."],"a":0,"exp":"É uma forma de raciocínio aplicável a muitos contextos."}
+            ],
+            "03": [
+              {"q":"Uma fonte com aparência profissional ainda precisa ser verificada porque:","o":["design bonito não garante autoria, evidência ou método confiável.","todo site bem feito é falso.","somente vídeos precisam de verificação.","textos com imagens sempre são científicos."],"a":0,"exp":"Forma visual não é prova de confiabilidade."},
+              {"q":"Ao usar um trecho encontrado em uma página, a paráfrase ética exige:","o":["trocar algumas palavras e não citar.","reescrever com compreensão própria e indicar a fonte.","copiar o trecho, mas mudar a fonte da letra.","usar apenas se ninguém perceber."],"a":1,"exp":"Paráfrase também precisa reconhecer a origem da ideia."},
+              {"q":"Um dado apresentado sem metodologia é frágil porque:","o":["números nunca podem ser usados.","não sabemos como foi coletado, em qual amostra e com quais limites.","todo dado precisa estar em gráfico 3D.","metodologia só importa em universidades."],"a":1,"exp":"Método permite avaliar a qualidade do dado."},
+              {"q":"Qual critério é menos confiável para decidir se uma informação é boa?","o":["autoria identificável.","evidências verificáveis.","quantidade de compartilhamentos.","data e contexto."],"a":2,"exp":"Popularidade não equivale a rigor."},
+              {"q":"Ao usar imagem da internet em um trabalho, o cuidado correto é:","o":["verificar licença, autoria e dar crédito.","remover marca d’água para ficar mais limpo.","assumir que toda imagem on-line é livre.","usar sem citar se for para escola."],"a":0,"exp":"Uso educacional também deve respeitar autoria e licença."},
+              {"q":"Uma boa estratégia de pesquisa combina:","o":["primeiro resultado, pressa e opinião pessoal.","termos específicos, filtros, comparação de fontes e leitura crítica.","apenas redes sociais e prints.","títulos chamativos e número de curtidas."],"a":1,"exp":"Pesquisar bem exige técnica e avaliação."},
+              {"q":"Quando duas fontes confiáveis discordam, o melhor caminho é:","o":["escolher a que confirma minha opinião.","analisar método, contexto, data e evidências de cada uma.","descartar as duas sem leitura.","usar a mais curta."],"a":1,"exp":"Divergência exige análise de qualidade e contexto."},
+              {"q":"Plágio de dados pode ocorrer quando:","o":["usamos tabela, gráfico ou levantamento sem atribuição.","calculamos uma média própria e citamos a fonte dos dados.","indicamos origem e data da pesquisa.","comentamos limitações do levantamento."],"a":0,"exp":"Dados também têm fonte, método e autoria."},
+              {"q":"Uma fonte com conflito de interesse deve ser:","o":["automaticamente aceita.","analisada com cautela e comparada com fontes independentes.","sempre proibida.","tratada como mais neutra que as demais."],"a":1,"exp":"Interesses podem influenciar a forma de apresentar informações."},
+              {"q":"Pesquisa crítica contribui para autonomia porque:","o":["permite decidir com evidências, método e responsabilidade.","torna todas as opiniões igualmente verdadeiras.","substitui a necessidade de ética.","elimina qualquer dúvida imediatamente."],"a":0,"exp":"Autonomia vem da capacidade de avaliar e justificar escolhas."}
+            ],
+            "04": [
+              {"q":"A economia da atenção cria incentivo para que plataformas priorizem:","o":["conteúdos que aumentem permanência, cliques e interação.","apenas textos acadêmicos longos.","resultados sempre neutros e sem publicidade.","o fim da personalização."],"a":0,"exp":"Tempo e engajamento podem ser convertidos em valor econômico."},
+              {"q":"A personalização do feed pode gerar bolhas quando:","o":["apresenta repetidamente conteúdos semelhantes aos já consumidos.","mostra sempre a mesma tela para todas as pessoas.","remove qualquer anúncio.","impede curtidas e comentários."],"a":0,"exp":"Repetição de perspectivas pode reduzir diversidade informacional."},
+              {"q":"Viralização prova principalmente que um conteúdo:","o":["é cientificamente correto.","alcançou muita gente ou gerou muita reação.","não precisa de fonte.","foi produzido por especialista."],"a":1,"exp":"Alcance não é sinônimo de verdade."},
+              {"q":"A responsabilidade das plataformas envolve mais que publicar regras porque:","o":["o desenho do sistema, a recomendação e a moderação influenciam comportamentos.","usuários nunca têm responsabilidade.","ter botão de curtir resolve conflitos.","redes sociais não causam impacto fora da tela."],"a":0,"exp":"Arquitetura de plataforma influencia riscos e interações."},
+              {"q":"Qual situação indica monetização da audiência?","o":["Um perfil transforma visualizações em anúncios, parcerias ou vendas.","Um estudante fecha o aplicativo.","Uma pessoa lê sem interagir.","Um site remove todos os dados."],"a":0,"exp":"Atenção pode virar receita direta ou indireta."},
+              {"q":"Conteúdo emocional nas redes deve ser analisado com cuidado porque:","o":["emoção sempre torna uma mensagem falsa.","raiva e medo podem reduzir checagem e acelerar compartilhamento.","todo conteúdo emocional é proibido.","apenas textos sem emoção são confiáveis."],"a":1,"exp":"Emoção pode comunicar, mas também manipular impulsos."},
+              {"q":"Uma postura crítica diante do feed é:","o":["perguntar por que aquele conteúdo apareceu e buscar fontes diversas.","clicar em tudo para treinar o algoritmo.","seguir apenas perfis iguais.","aceitar o primeiro conteúdo como verdade."],"a":0,"exp":"Autonomia inclui consciência sobre recomendações."},
+              {"q":"Polarização aumenta quando:","o":["identidade de grupo e ataque passam a valer mais que argumentos e evidências.","há escuta ativa e comparação de fontes.","as pessoas revisam posições.","o debate inclui dados e contexto."],"a":0,"exp":"Polarização costuma enfraquecer diálogo e análise."},
+              {"q":"O capítulo sugere compreender redes sociais como:","o":["sistemas sociotécnicos formados por pessoas, algoritmos e interesses econômicos.","ferramentas neutras sem impacto social.","apenas passatempo individual.","ambientes onde tudo é espontâneo e sem mediação."],"a":0,"exp":"Redes combinam tecnologia, economia, cultura e comportamento."},
+              {"q":"Qual atitude reduz o efeito de bolhas informacionais?","o":["comparar fontes, seguir perspectivas diferentes e checar evidências.","bloquear todo conteúdo divergente.","compartilhar apenas o que confirma minha opinião.","usar só comentários como fonte."],"a":0,"exp":"Diversidade de fontes ajuda a ampliar a análise."}
+            ]
+          }
+
+          NEW_RENDER = """function shuffleQuizOptions(arr){const copy=[...arr];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}\nfunction renderQuiz(){quizLocked=false;const item=QUIZ[quizIndex];quizCounter.textContent=`Pergunta ${quizIndex+1} de ${QUIZ.length}`;quizScore.textContent=`${quizPoints} pts`;quizProgress.style.width=`${(quizIndex/QUIZ.length)*100}%`;quizQuestion.textContent=item.q;quizFeedback.className='quiz-feedback';quizFeedback.textContent='Escolha uma alternativa.';nextQuizBtn.disabled=true;nextQuizBtn.textContent=quizIndex===QUIZ.length-1?'Ver resultado':'Próxima';quizOptions.innerHTML='';const options=shuffleQuizOptions(item.o.map((opt,i)=>({opt,correct:i===item.a})));options.forEach(({opt,correct})=>{const btn=document.createElement('button');btn.className='quiz-option';btn.textContent=opt;btn.dataset.correct=correct?'1':'0';btn.addEventListener('click',()=>answerQuiz(btn));quizOptions.appendChild(btn)})}\nfunction answerQuiz(btn){if(quizLocked)return;quizLocked=true;const item=QUIZ[quizIndex];const buttons=[...document.querySelectorAll('.quiz-option')];buttons.forEach(b=>b.disabled=true);const correctBtn=buttons.find(b=>b.dataset.correct==='1');if(correctBtn)correctBtn.classList.add('correct');if(btn.dataset.correct==='1'){quizPoints++;quizFeedback.className='quiz-feedback good';quizFeedback.textContent=`Correto! ${item.exp}`}else{btn.classList.add('wrong');quizFeedback.className='quiz-feedback bad';quizFeedback.textContent=`Ainda não. ${item.exp}`}quizScore.textContent=`${quizPoints} pts`;nextQuizBtn.disabled=false}\nfunction showQuizResult(){"""
+
+          changed = []
+          for n, quiz in QUIZZES.items():
+              path = pathlib.Path(f"slides/capitulo-{n}.html")
+              text = path.read_text(encoding="utf-8")
+              quiz_json = json.dumps(quiz, ensure_ascii=False)
+              text2, c1 = re.subn(r"const QUIZ = \[.*?\];", "const QUIZ = " + quiz_json + ";", text, count=1, flags=re.S)
+              text2, c2 = re.subn(r"function renderQuiz\(\)\{.*?function showQuizResult\(\)\{", NEW_RENDER, text2, count=1, flags=re.S)
+              if c1 != 1 or c2 != 1:
+                  print(f"Falha ao localizar blocos do quiz em {path}: QUIZ={c1}, render={c2}")
+                  sys.exit(1)
+              if text2 != text:
+                  path.write_text(text2, encoding="utf-8")
+                  changed.append(str(path))
+
+          if not changed:
+              print("Nenhuma alteração necessária.")
+              sys.exit(0)
+
+          subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+          subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          subprocess.run(["git", "add", *changed], check=True)
+          subprocess.run(["git", "commit", "-m", "Corrige quizzes dos capítulos 1 a 4"], check=True)
+          subprocess.run(["git", "push"], check=True)
+          PY
